@@ -33,7 +33,7 @@ export default function App() {
           </div>
           <div>
             <h1>קליטת נסח טאבו ל-CRM</h1>
-            <div className="subtitle">SAP Sales Cloud • C4C</div>
+            <div className="subtitle">SAP Sales Cloud</div>
           </div>
         </div>
       </header>
