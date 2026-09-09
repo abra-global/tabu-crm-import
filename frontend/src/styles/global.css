@@ -1,38 +1,92 @@
+/* =====================================================================
+   Visual language: SAP Fiori / Horizon (used by SAP Sales and Service
+   Cloud V2 custom frontends).
+
+   PROVENANCE / KNOWN LIMITATIONS (please read):
+   - The specific community.sap.com article and its companion GitHub
+     CSS styleguide referenced for this project could not be reached
+     (the article blocks automated access; the styleguide repo's exact
+     URL never surfaced in search results). Nothing was invented to
+     compensate for that gap.
+   - The token values below are SAP's own PUBLICLY DOCUMENTED Fiori/
+     Horizon design language (colors, "72" typeface, 8px spacing base,
+     4/8/12px radii, type scale), as compiled by a third-party public
+     reference (designsystems.one/design-systems/sap-fiori, itself
+     pointing to https://www.sap.com/design-system). These are real,
+     citable values - not approximated/generic framework defaults -
+     but they are SAP's general design language, not the specific
+     unreachable blog author's exact CSS.
+   - FONT SUBSTITUTION: SAP's "72" typeface is proprietary and not
+     distributed on Google Fonts, so it cannot be used here. Nearest
+     Hebrew+Latin match on Google Fonts: "Assistant" (a clean, neutral
+     enterprise-grade sans-serif commonly used as a "72" stand-in in
+     Hebrew UIs). Flagging this substitution - if exact "72" font files
+     become available, they should replace this.
+   ===================================================================== */
+
 :root {
-  /* Color system - deep navy brand, off-white/white surfaces, restrained accent */
-  --navy-900: #0d1730;
-  --navy-800: #131f42;
-  --navy-700: #1c2c58;
-  --ink: #16192b;
-  --ink-soft: #5b6072;
-  --ink-faint: #8b8fa0;
+  /* ---- SAP Fiori / Horizon color tokens (documented values) ---- */
+  --sap-brand: #0070f2;          /* Brand and primary actions (Horizon) */
+  --sap-brand-hover: #0058c7;    /* Derived: brand, hover-darkened */
+  --sap-brand-soft: rgba(0, 112, 242, 0.08);
 
-  --bg: #f6f7fa;
-  --surface: #ffffff;
-  --surface-sunken: #f2f3f7;
-  --border: #e7e8ee;
-  --border-strong: #d7d9e3;
+  --sap-text: #1d2d3e;           /* Primary text (Horizon) */
+  --sap-label: #556b82;          /* Labels / secondary text */
+  --sap-label-faint: #8a99a8;    /* Derived: tertiary/placeholder text */
 
-  --accent: #3457d5;
-  --accent-soft: #eef1fd;
+  --sap-base: #ffffff;           /* Control surfaces */
+  --sap-shell: #f5f6f7;          /* Application shell background */
+  --sap-border: #d9d9d9;         /* Field borders */
+  --sap-border-strong: #b7c0c9;  /* Derived: stronger border for emphasis */
 
-  --success: #17803d;
-  --success-soft: #e9f7ef;
-  --warning: #b45309;
-  --warning-soft: #fdf3e2;
-  --danger: #c22a2a;
-  --danger-soft: #fbebeb;
+  --sap-negative: #d20a0a;       /* Errors */
+  --sap-negative-soft: rgba(210, 10, 10, 0.08);
+  --sap-positive: #30914c;       /* Success */
+  --sap-positive-soft: rgba(48, 145, 76, 0.1);
+  --sap-critical: #e76500;       /* Warnings */
+  --sap-critical-soft: rgba(231, 101, 0, 0.1);
+  --sap-informative: #0057d2;    /* Information */
+  --sap-informative-soft: rgba(0, 87, 210, 0.08);
 
-  --shadow-sm: 0 1px 2px rgba(16, 23, 48, 0.05);
-  --shadow-md: 0 4px 16px rgba(16, 23, 48, 0.07);
-  --shadow-lg: 0 12px 32px rgba(16, 23, 48, 0.10);
+  /* ---- Typography ---- */
+  --font-body: 'Assistant', '72', '72full', Arial, Helvetica, sans-serif;
+  --font-display: 'Assistant', '72', '72full', Arial, Helvetica, sans-serif;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  /* Type scale (documented): header-1 36/48, header-3 20/28,
+     header-5 16/22, body 14/20, small 12/16 */
+  --text-header-1: 36px;
+  --text-header-1-lh: 48px;
+  --text-header-3: 20px;
+  --text-header-3-lh: 28px;
+  --text-header-5: 16px;
+  --text-header-5-lh: 22px;
+  --text-body: 14px;
+  --text-body-lh: 20px;
+  --text-small: 12px;
+  --text-small-lh: 16px;
 
-  --font-display: 'Rubik', 'Heebo', sans-serif;
-  --font-body: 'Heebo', 'Rubik', sans-serif;
+  /* ---- Spacing (documented 8px base scale) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  /* ---- Corner radius (documented) ---- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* ---- Elevation ----
+     Horizon is a FLAT, bordered design language - surfaces mostly rely
+     on a 1px border, not heavy card shadow. The one documented shadow
+     token is reserved for actually-elevated/hover states only. */
+  --shadow-level-1: 0 2px 8px 0 rgba(34, 54, 73, 0.15);
+  --shadow-sm: 0 1px 2px rgba(29, 45, 62, 0.06);
+
+  /* ---- Motion (documented) ---- */
+  --motion-default: 200ms ease;
 }
 
 * {
@@ -47,11 +101,11 @@ body,
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--ink);
+  background: var(--sap-shell);
+  color: var(--sap-text);
   font-family: var(--font-body);
-  font-size: 15.5px;
-  line-height: 1.55;
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -60,19 +114,19 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--sap-brand);
   outline-offset: 2px;
 }
 
 .app-shell {
   max-width: 880px;
   margin: 0 auto;
-  padding: 40px 28px 96px;
+  padding: var(--space-5) var(--space-4) 96px;
 }
 
 @media (max-width: 640px) {
   .app-shell {
-    padding: 28px 18px 72px;
+    padding: var(--space-4) var(--space-3) 72px;
   }
 }
 
@@ -82,40 +136,40 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 4px 36px;
+  padding: var(--space-1) var(--space-1) var(--space-5);
 }
 
 .masthead .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .masthead .brand-mark {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(155deg, var(--navy-700), var(--navy-900));
+  background: var(--sap-brand);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
 }
 
 .masthead h1 {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 19px;
+  font-weight: 700;
+  font-size: var(--text-header-5);
+  line-height: var(--text-header-5-lh);
   margin: 0;
-  color: var(--navy-900);
-  letter-spacing: -0.01em;
+  color: var(--sap-text);
 }
 
 .masthead .subtitle {
-  font-size: 13px;
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
+  color: var(--sap-label);
   margin-top: 1px;
 }
 
@@ -125,15 +179,15 @@ button {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 40px;
-  padding: 0 4px;
+  margin-bottom: var(--space-5);
+  padding: 0 var(--space-1);
 }
 
 .stepper .step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex: 1;
   position: relative;
 }
@@ -144,7 +198,7 @@ button {
   right: 50%;
   width: 100%;
   height: 2px;
-  background: var(--border);
+  background: var(--sap-border);
   z-index: 0;
 }
 
@@ -163,55 +217,55 @@ button {
 }
 
 .stepper .connector.filled {
-  background: var(--navy-800);
+  background: var(--sap-brand);
 }
 
 .stepper .circle {
-  width: 29px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: 700;
   font-family: var(--font-display);
-  background: var(--surface);
-  border: 2px solid var(--border-strong);
-  color: var(--ink-faint);
+  background: var(--sap-base);
+  border: 2px solid var(--sap-border);
+  color: var(--sap-label);
   position: relative;
   z-index: 1;
-  transition: all 0.2s ease;
+  transition: all var(--motion-default);
 }
 
 .stepper .step-item.done .circle {
-  background: var(--navy-800);
-  border-color: var(--navy-800);
+  background: var(--sap-brand);
+  border-color: var(--sap-brand);
   color: #fff;
 }
 
 .stepper .step-item.active .circle {
-  background: var(--surface);
-  border-color: var(--navy-800);
-  color: var(--navy-800);
-  box-shadow: 0 0 0 4px var(--accent-soft);
+  background: var(--sap-base);
+  border-color: var(--sap-brand);
+  color: var(--sap-brand);
+  box-shadow: 0 0 0 4px var(--sap-brand-soft);
 }
 
 .stepper .step-label {
-  font-size: 12px;
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--sap-label);
   text-align: center;
   max-width: 84px;
   line-height: 1.3;
 }
 
 .stepper .step-item.active .step-label {
-  color: var(--navy-900);
-  font-weight: 600;
+  color: var(--sap-text);
+  font-weight: 700;
 }
 
 .stepper .step-item.done .step-label {
-  color: var(--ink-soft);
+  color: var(--sap-label);
 }
 
 @media (max-width: 560px) {
@@ -223,52 +277,60 @@ button {
 /* ---------- Page structure ---------- */
 
 .page-head {
-  margin-bottom: 28px;
+  margin-bottom: var(--space-4);
 }
 
 .page-head h2 {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 24px;
-  margin: 0 0 8px;
-  color: var(--navy-900);
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: var(--text-header-3);
+  line-height: var(--text-header-3-lh);
+  margin: 0 0 var(--space-2);
+  color: var(--sap-text);
 }
 
 .page-head p {
-  color: var(--ink-soft);
-  font-size: 15px;
+  color: var(--sap-label);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
   margin: 0;
   max-width: 62ch;
 }
 
+/* Fiori/Horizon panels are flat: a single hairline border, background
+   fill, minimal-to-no shadow at rest - not a heavy drop shadow. */
 .surface {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 28px;
+  background: var(--sap-base);
+  border: 1px solid var(--sap-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
 }
 
 @media (max-width: 640px) {
   .surface {
-    padding: 20px;
-    border-radius: var(--radius-md);
+    padding: var(--space-3);
   }
 }
 
-/* ---------- Buttons ---------- */
+/* ---------- Buttons ----------
+   Fiori button hierarchy has one primary/"Emphasized" treatment (brand
+   blue) and one "Default" (bordered, transparent) treatment - not
+   several differently-hued primary buttons. btn-primary and btn-accent
+   are therefore visually identical (Emphasized); both class names are
+   kept as-is so no JSX changes were needed. */
 
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 20px;
-  border-radius: var(--radius-sm);
+  gap: var(--space-2);
+  padding: 9px var(--space-4);
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
-  font-size: 14.5px;
-  font-weight: 500;
+  font-size: var(--text-body);
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, transform 0.05s ease;
+  transition: background-color var(--motion-default), border-color var(--motion-default),
+    opacity var(--motion-default), transform 0.05s ease;
   font-family: var(--font-body);
 }
 
@@ -277,111 +339,108 @@ button {
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--navy-900);
+  outline: 2px solid var(--sap-brand);
   outline-offset: 2px;
 }
 
-.btn-primary {
-  background: var(--navy-900);
+.btn-primary,
+.btn-accent {
+  background: var(--sap-brand);
   color: #fff;
-  box-shadow: var(--shadow-sm);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--navy-700);
+.btn-primary:hover:not(:disabled),
+.btn-accent:hover:not(:disabled) {
+  background: var(--sap-brand-hover);
 }
 
-.btn-primary:disabled {
+.btn-primary:disabled,
+.btn-accent:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: transparent;
-  border-color: var(--border-strong);
-  color: var(--ink);
+  background: var(--sap-base);
+  border-color: var(--sap-border);
+  color: var(--sap-text);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--surface-sunken);
-  border-color: var(--ink-faint);
-}
-
-.btn-accent {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-accent:hover:not(:disabled) {
-  background: #2c47b8;
-}
-
-.btn-accent:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  background: var(--sap-shell);
+  border-color: var(--sap-border-strong);
 }
 
 /* ---------- Forms ---------- */
 
 .field-label {
   display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  margin-bottom: 6px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--sap-label);
+  margin-bottom: var(--space-1);
 }
 
 .text-input,
 select {
   width: 100%;
-  padding: 10px 13px;
-  border: 1.5px solid var(--border);
+  padding: 9px 12px;
+  border: 1px solid var(--sap-border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--sap-base);
   font-family: var(--font-body);
-  font-size: 14.5px;
-  color: var(--ink);
-  transition: border-color 0.15s ease;
+  font-size: var(--text-body);
+  color: var(--sap-text);
+  transition: border-color var(--motion-default);
 }
 
 .text-input:focus,
 select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--sap-brand);
+  box-shadow: 0 0 0 2px var(--sap-brand-soft);
 }
 
-/* ---------- Status badges ---------- */
+/* ---------- Status badges ----------
+   Tints are the base semantic color at low alpha - kept systematic
+   rather than separate hand-picked "soft" hex colors. */
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 3px 9px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  padding: 2px 9px;
   border-radius: 999px;
-  line-height: 1.4;
+  line-height: var(--text-small-lh);
 }
 
 .badge-warning {
-  background: var(--warning-soft);
-  color: var(--warning);
+  background: var(--sap-critical-soft);
+  color: var(--sap-critical);
 }
 
 .badge-success {
-  background: var(--success-soft);
-  color: var(--success);
+  background: var(--sap-positive-soft);
+  color: var(--sap-positive);
 }
 
 .badge-danger {
-  background: var(--danger-soft);
-  color: var(--danger);
+  background: var(--sap-negative-soft);
+  color: var(--sap-negative);
 }
 
 .badge-neutral {
-  background: var(--surface-sunken);
-  color: var(--ink-soft);
+  background: var(--sap-shell);
+  color: var(--sap-label);
+}
+
+/* 'already_exists' association status - distinct from success/failure so
+   it is never confused with a freshly-created association. */
+.badge-info {
+  background: var(--sap-informative-soft);
+  color: var(--sap-informative);
 }
 
 /* ---------- Alert banners ---------- */
@@ -389,12 +448,13 @@ select:focus {
 .alert {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 13px 15px;
-  border-radius: var(--radius-md);
-  font-size: 13.5px;
-  margin-bottom: 16px;
-  line-height: 1.5;
+  gap: var(--space-2);
+  padding: 12px var(--space-3);
+  border-radius: var(--radius-sm);
+  border-inline-start: 3px solid transparent;
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
+  margin-bottom: var(--space-3);
 }
 
 .alert svg {
@@ -403,18 +463,21 @@ select:focus {
 }
 
 .alert-danger {
-  background: var(--danger-soft);
-  color: #8f2020;
+  background: var(--sap-negative-soft);
+  border-inline-start-color: var(--sap-negative);
+  color: #8a0808;
 }
 
 .alert-warning {
-  background: var(--warning-soft);
-  color: #8a4306;
+  background: var(--sap-critical-soft);
+  border-inline-start-color: var(--sap-critical);
+  color: #9c5000;
 }
 
 .alert-success {
-  background: var(--success-soft);
-  color: #145c30;
+  background: var(--sap-positive-soft);
+  border-inline-start-color: var(--sap-positive);
+  color: #1f6b38;
 }
 
 /* ---------- Project selection ---------- */
@@ -422,95 +485,97 @@ select:focus {
 .project-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .project-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 18px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--border);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sap-border);
   cursor: pointer;
-  background: var(--surface);
+  background: var(--sap-base);
   text-align: right;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color var(--motion-default), background-color var(--motion-default);
 }
 
 .project-row:hover {
-  border-color: var(--ink-faint);
+  border-color: var(--sap-border-strong);
+  background: var(--sap-shell);
 }
 
 .project-row.selected {
-  border-color: var(--navy-800);
-  background: var(--accent-soft);
+  border-color: var(--sap-brand);
+  background: var(--sap-brand-soft);
 }
 
 .project-row .name {
-  font-weight: 500;
-  color: var(--ink);
+  font-weight: 600;
+  color: var(--sap-text);
 }
 
 .project-row .id {
-  font-size: 12px;
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--sap-label-faint);
   font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Upload / dropzone ---------- */
 
 .dropzone {
-  border: 1.5px dashed var(--border-strong);
-  border-radius: var(--radius-lg);
-  padding: 56px 24px;
+  border: 1px dashed var(--sap-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-4);
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color var(--motion-default), background-color var(--motion-default);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-3);
 }
 
 .dropzone:hover,
 .dropzone.drag-over {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: var(--sap-brand);
+  background: var(--sap-brand-soft);
 }
 
 .dropzone .upload-icon {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--surface-sunken);
+  background: var(--sap-shell);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--navy-800);
+  color: var(--sap-brand);
 }
 
 .dropzone .drop-label {
-  color: var(--ink-soft);
-  font-size: 14.5px;
+  color: var(--sap-label);
+  font-size: var(--text-body);
 }
 
 .dropzone .file-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: var(--surface-sunken);
+  gap: var(--space-2);
+  background: var(--sap-shell);
+  border: 1px solid var(--sap-border);
   border-radius: 999px;
-  padding: 7px 16px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--navy-900);
+  padding: 6px 14px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--sap-text);
 }
 
 /* ---------- Preview: grouped table ---------- */
 
 .unit-group {
-  margin-bottom: 30px;
+  margin-bottom: var(--space-5);
 }
 
 .unit-group:last-child {
@@ -521,28 +586,28 @@ select:focus {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 0 2px 12px;
-  border-bottom: 1.5px solid var(--navy-900);
-  margin-bottom: 16px;
+  padding: 0 2px var(--space-2);
+  border-bottom: 2px solid var(--sap-text);
+  margin-bottom: var(--space-3);
 }
 
 .unit-group-head .path {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15.5px;
-  color: var(--navy-900);
+  font-weight: 700;
+  font-size: var(--text-body);
+  color: var(--sap-text);
 }
 
 .unit-group-head .owner-count {
-  font-size: 12.5px;
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--sap-label-faint);
 }
 
 .field-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px 14px;
-  margin-bottom: 18px;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 @media (max-width: 700px) {
@@ -558,53 +623,54 @@ select:focus {
 
 .field .mini-label {
   font-size: 11px;
-  color: var(--ink-faint);
+  color: var(--sap-label-faint);
   margin-bottom: 4px;
 }
 
 .field input {
-  border: 1.5px solid transparent;
-  background: var(--surface-sunken);
+  border: 1px solid var(--sap-border);
+  background: var(--sap-shell);
   border-radius: var(--radius-sm);
   padding: 7px 9px;
-  font-size: 13.5px;
+  font-size: var(--text-small);
   font-family: var(--font-body);
-  color: var(--ink);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  color: var(--sap-text);
+  transition: border-color var(--motion-default), background-color var(--motion-default);
 }
 
 .field input:focus {
   outline: none;
-  border-color: var(--accent);
-  background: var(--surface);
+  border-color: var(--sap-brand);
+  background: var(--sap-base);
 }
 
 .owners-table-wrap {
   overflow-x: auto;
-  border-radius: var(--radius-md);
+  border: 1px solid var(--sap-border);
+  border-radius: var(--radius-sm);
 }
 
 table.owners-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--text-body);
 }
 
 table.owners-table thead th {
   position: sticky;
   top: 0;
   text-align: right;
-  color: var(--ink-faint);
-  font-weight: 500;
-  font-size: 12px;
-  background: var(--surface);
+  color: var(--sap-label);
+  font-weight: 600;
+  font-size: var(--text-small);
+  background: var(--sap-shell);
   padding: 8px 10px;
-  border-bottom: 1.5px solid var(--border);
+  border-bottom: 1px solid var(--sap-border);
 }
 
 table.owners-table tbody td {
   padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--sap-border);
 }
 
 table.owners-table tbody tr:last-child td {
@@ -612,35 +678,35 @@ table.owners-table tbody tr:last-child td {
 }
 
 table.owners-table tbody tr.flagged {
-  background: var(--warning-soft);
+  background: var(--sap-critical-soft);
 }
 
 table.owners-table input {
   width: 100%;
-  border: 1.5px solid transparent;
+  border: 1px solid transparent;
   background: transparent;
   padding: 6px 8px;
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--ink);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  font-size: var(--text-body);
+  color: var(--sap-text);
+  transition: border-color var(--motion-default), background-color var(--motion-default);
 }
 
 table.owners-table input:focus {
   outline: none;
-  border-color: var(--accent);
-  background: var(--surface);
+  border-color: var(--sap-brand);
+  background: var(--sap-base);
 }
 
 .no-owners-note {
-  font-size: 13.5px;
-  color: var(--ink-faint);
+  font-size: var(--text-body);
+  color: var(--sap-label-faint);
   padding: 6px 2px 2px;
 }
 
 .unit-issues {
-  margin-top: 10px;
+  margin-top: var(--space-2);
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -651,31 +717,32 @@ table.owners-table input:focus {
 .checkbox-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px 18px;
-  border-radius: var(--radius-md);
-  background: var(--surface-sunken);
-  margin-top: 24px;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--sap-border);
+  border-radius: var(--radius-sm);
+  background: var(--sap-shell);
+  margin-top: var(--space-4);
 }
 
 .checkbox-row input {
   margin-top: 3px;
-  width: 17px;
-  height: 17px;
-  accent-color: var(--navy-800);
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sap-brand);
   flex-shrink: 0;
 }
 
 .checkbox-row label {
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  color: var(--ink);
+  color: var(--sap-text);
 }
 
 .checkbox-row .desc {
   font-weight: 400;
-  font-size: 13px;
-  color: var(--ink-soft);
+  font-size: var(--text-small);
+  color: var(--sap-label);
   margin-top: 4px;
 }
 
@@ -685,27 +752,28 @@ table.owners-table input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 28px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--sap-border);
 }
 
 /* ---------- Import progress ---------- */
 
 .overall-progress {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-4);
 }
 
 .overall-progress .bar-track {
   height: 6px;
-  background: var(--surface-sunken);
+  background: var(--sap-shell);
+  border: 1px solid var(--sap-border);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .overall-progress .bar-fill {
   height: 100%;
-  background: var(--navy-800);
+  background: var(--sap-brand);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
@@ -713,9 +781,9 @@ table.owners-table input:focus {
 .overall-progress .bar-label {
   display: flex;
   justify-content: space-between;
-  font-size: 12.5px;
-  color: var(--ink-faint);
-  margin-top: 8px;
+  font-size: var(--text-small);
+  color: var(--sap-label);
+  margin-top: var(--space-2);
 }
 
 .progress-list {
@@ -726,9 +794,9 @@ table.owners-table input:focus {
 .progress-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px 4px;
-  border-bottom: 1px solid var(--border);
+  gap: var(--space-3);
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--sap-border);
 }
 
 .progress-row:last-child {
@@ -742,36 +810,36 @@ table.owners-table input:focus {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--ink-faint);
+  color: var(--sap-label-faint);
 }
 
 .progress-row.done .status-icon {
-  color: var(--success);
+  color: var(--sap-positive);
 }
 
 .progress-row.error .status-icon {
-  color: var(--danger);
+  color: var(--sap-negative);
 }
 
 .progress-row.running .status-icon {
-  color: var(--accent);
+  color: var(--sap-brand);
 }
 
 .progress-row .path {
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
-  color: var(--ink);
-  font-size: 14px;
+  color: var(--sap-text);
+  font-size: var(--text-body);
 }
 
 .progress-row .msg {
-  color: var(--ink-faint);
-  font-size: 13px;
+  color: var(--sap-label);
+  font-size: var(--text-small);
 }
 
 .progress-row .error-msg {
-  color: var(--danger);
-  font-size: 13px;
+  color: var(--sap-negative);
+  font-size: var(--text-small);
 }
 
 .spin {
@@ -789,9 +857,9 @@ table.owners-table input:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 56px 0;
-  color: var(--ink-soft);
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  color: var(--sap-label);
 }
 
 /* ---------- Results dashboard ---------- */
@@ -801,40 +869,41 @@ table.owners-table input:focus {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 12px 0 32px;
+  padding: var(--space-3) 0 var(--space-4);
 }
 
 .results-hero .success-icon {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: var(--success-soft);
-  color: var(--success);
+  background: var(--sap-positive-soft);
+  color: var(--sap-positive);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-3);
 }
 
 .results-hero h2 {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 22px;
+  font-weight: 700;
+  font-size: var(--text-header-3);
+  line-height: var(--text-header-3-lh);
   margin: 0 0 6px;
-  color: var(--navy-900);
+  color: var(--sap-text);
 }
 
 .results-hero p {
-  color: var(--ink-soft);
-  font-size: 14.5px;
+  color: var(--sap-label);
+  font-size: var(--text-body);
   margin: 0;
 }
 
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 @media (max-width: 700px) {
@@ -843,44 +912,50 @@ table.owners-table input:focus {
   }
 }
 
+/* KPI tile - modeled on Fiori's Object Number pattern: a large bold
+   number with a small label beneath, on a flat tinted panel. */
 .summary-tile {
-  border-radius: var(--radius-md);
-  padding: 18px 14px;
-  background: var(--surface-sunken);
+  border: 1px solid var(--sap-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-2);
+  background: var(--sap-shell);
   text-align: center;
 }
 
 .summary-tile .value {
   font-family: var(--font-display);
   font-size: 26px;
-  font-weight: 600;
-  color: var(--navy-900);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--sap-text);
+  font-variant-numeric: tabular-nums;
 }
 
 .summary-tile .label {
-  font-size: 12px;
-  color: var(--ink-soft);
+  font-size: var(--text-small);
+  color: var(--sap-label);
   margin-top: 4px;
 }
 
 .summary-tile.negative .value {
-  color: var(--danger);
+  color: var(--sap-negative);
 }
 
 .summary-tile.positive .value {
-  color: var(--success);
+  color: var(--sap-positive);
 }
 
 .results-section-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--navy-900);
-  margin: 32px 0 4px;
+  font-weight: 700;
+  font-size: var(--text-header-5);
+  line-height: var(--text-header-5-lh);
+  color: var(--sap-text);
+  margin: var(--space-5) 0 4px;
 }
 
 .results-section-hint {
-  font-size: 13.5px;
-  color: var(--ink-soft);
-  margin: 0 0 14px;
+  font-size: var(--text-small);
+  color: var(--sap-label);
+  margin: 0 0 var(--space-3);
 }

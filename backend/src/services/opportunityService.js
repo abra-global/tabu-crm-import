@@ -57,6 +57,25 @@ export async function patchOpportunity(opportunityId, patchBody) {
 }
 
 /**
+ * Checks whether a Registered Product is already associated with the
+ * Opportunity, using the SAME child-collection endpoint the association
+ * itself is created through (just as a GET instead of a POST) - this is
+ * SAP itself as the authoritative source, not an in-memory cache and not
+ * an assumption based on "we just created this RP" or "this is the same
+ * import batch".
+ */
+async function findOpportunityRegisteredProductAssociation(opportunityId, registeredProductId) {
+  const url = `${OPPORTUNITY_PATH}/${encodeURIComponent(opportunityId)}/registeredProducts`;
+  const { data } = await crmClient.get(url);
+  const rawList = data?.value ?? data?.d?.results ?? (Array.isArray(data) ? data : []);
+
+  return rawList.some((item) => {
+    const candidate = item?.registeredProductId ?? item?.registeredProduct?.id ?? item?.id;
+    return candidate === registeredProductId;
+  });
+}
+
+/**
  * Associates ONE Registered Product with the selected Opportunity via the
  * confirmed-working child-collection endpoint:
  *
@@ -70,12 +89,32 @@ export async function patchOpportunity(opportunityId, patchBody) {
  * endpoint entirely. That PATCH-based approach has been removed so it
  * cannot be called by mistake.
  *
+ * DUPLICATE CHECK: before every POST, this queries SAP (via the function
+ * above) for whether the exact Opportunity + Registered Product
+ * association already exists. If it does, the POST is skipped entirely
+ * and 'already_exists' is returned. This check runs on every call - even
+ * if the same association is requested five times in one import run, only
+ * the first call POSTs; every subsequent call sees it in SAP (since these
+ * calls run sequentially, not in parallel) and reports 'already_exists'.
+ *
  * Uses the Registered Product's TECHNICAL id only - never displayId, never
  * serialId. This is a plain POST (not a PATCH), so no ETag/If-Match is
  * involved here; Basic Auth, Accept and Content-Type all come from the
  * existing crmClient exactly as for any other POST in this codebase.
+ *
+ * Returns 'created' | 'already_exists'.
  */
 export async function associateRegisteredProductWithOpportunity(opportunityId, registeredProductId) {
+  const alreadyExists = await findOpportunityRegisteredProductAssociation(opportunityId, registeredProductId);
+
+  if (alreadyExists) {
+    logger.info('opportunityService', 'Registered Product already associated with Opportunity - skipping POST', {
+      opportunityId,
+      registeredProductId,
+    });
+    return 'already_exists';
+  }
+
   const url = `${OPPORTUNITY_PATH}/${encodeURIComponent(opportunityId)}/registeredProducts`;
   const body = { registeredProductId };
 
@@ -88,4 +127,5 @@ export async function associateRegisteredProductWithOpportunity(opportunityId, r
     opportunityId,
     registeredProductId,
   });
+  return 'created';
 }

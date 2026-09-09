@@ -112,7 +112,9 @@ export async function createRegisteredProduct({ unit, referenceProductId, accoun
   // neither is present.
   const id = resolveTechnicalId(data?.value ?? data, { entityName: 'Registered Product' });
   logger.info('registeredProductService', 'Created Registered Product', { serialId, id });
-  return { id, serialId, created: true };
+  // The Registered Product itself is brand new, so its Account link (if
+  // any) cannot have pre-existed - it is unconditionally 'created'.
+  return { id, serialId, created: true, accountAssociation: accountId ? 'created' : null };
 }
 
 /**
@@ -142,14 +144,22 @@ export async function updateRegisteredProduct({
 
   // STEP 1 + 2: fresh GET, read the current ETag from THIS response. The
   // technical ID is already known (it's the ID used to build this GET
-  // URL) - it is not re-derived from the response body.
-  const { etag } = await crmClient.get(patchUrl);
+  // URL) - it is not re-derived from the response body. We DO read the
+  // current `account` field from this same response, purely to determine
+  // whether the RP<->Account association already exists (SAP itself is
+  // the source of truth for this duplicate check) - this is unrelated to,
+  // and does not reintroduce, the earlier "don't re-resolve the RP's own
+  // ID from the GET body" fix.
+  const { data: current, etag } = await crmClient.get(patchUrl);
   logger.debug('registeredProductService', '[registered-product][DEBUG] RP ID:', { technicalId });
   logger.debug('registeredProductService', '[registered-product][DEBUG] GET ETag:', { etag });
 
   if (!etag) {
     throw new Error(`Registered Product ${technicalId}: CRM did not return an ETag on GET.`);
   }
+
+  const existingAccountId = current?.account?.id ?? current?.account?.ID ?? null;
+  const accountAssociation = accountId ? (existingAccountId === accountId ? 'already_exists' : 'created') : null;
 
   // ---- TEMPORARY DIAGNOSTIC LOGGING (investigating repeated 412s) ----
   // Always-on (not gated by CRM_DEBUG) so it is visible during the real run.
@@ -197,7 +207,7 @@ export async function updateRegisteredProduct({
     log?.(`מעדכן מוצר רשום קיים (${serialId})...`);
     await crmClient.patch(patchUrl, body, etag);
     logger.info('registeredProductService', 'Updated Registered Product', { serialId, technicalId });
-    return { id: technicalId, serialId, created: false };
+    return { id: technicalId, serialId, created: false, accountAssociation };
   } catch (err) {
     if (err instanceof CrmApiError && err.status === 412 && attempt === 1) {
       logger.warn('registeredProductService', 'Registered Product PATCH got 412, retrying once with a fresh GET', {

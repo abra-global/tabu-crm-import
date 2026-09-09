@@ -19,28 +19,40 @@ function isValidOwner(owner) {
  * Resolves the Account/Contact identity for one Sub-Parcel's owners
  * according to spec sections 5, 6 and 7.
  *
+ * Every Account/Contact association is checked against SAP (via
+ * resolveAccountForOwner/resolveContactForOwner, which look up before
+ * creating) and reported individually in `associationResults` as
+ * 'created' or 'already_exists' - never silently treated as a fresh
+ * success when SAP already had it.
+ *
  * Returns:
  *   {
  *     primaryAccountId: string | null,
  *     accountsCreated, accountsReused, contactsCreated, contactsReused: number,
  *     skippedOwners: [{ name }],
  *     isGovernmentAuthority: boolean,
+ *     associationResults: [{ label, status }],
  *   }
  */
 async function resolveOwnersForUnit(unit, { separateAccountPerResident, log }) {
   const counters = { accountsCreated: 0, accountsReused: 0, contactsCreated: 0, contactsReused: 0 };
   const skippedOwners = [];
+  const associationResults = [];
 
   if (!unit.owners || unit.owners.length === 0) {
     // No owners at all - Registered Product is created/updated with no
-    // Account and no Contact, per spec / existing UI copy.
-    return { primaryAccountId: null, ...counters, skippedOwners, isGovernmentAuthority: false };
+    // Account and no Contact, per spec / existing UI copy. Nothing to
+    // check for duplicates.
+    return { primaryAccountId: null, ...counters, skippedOwners, isGovernmentAuthority: false, associationResults };
   }
 
   const govtOwner = unit.owners.find((o) => o.isGovernmentAuthority || isGovernmentAuthorityName(o.name));
   if (govtOwner) {
     // Spec section 5: fixed Account, no lookup, no Account creation, no
-    // Contact. Never infer this from an unrelated SAP error later.
+    // Contact. Never infer this from an unrelated SAP error later. The
+    // fixed Government Account is a static constant, not something SAP
+    // lookup can return "created"/"already_exists" for, so it is not
+    // added to associationResults.
     log(`בעלים ציבורי (${govtOwner.name}) - משתמש בחשבון קבוע של רשות הפתוח.`);
     logger.info('importService', 'Using fixed Government Authority Account', {
       accountId: config.sap.governmentAccountId,
@@ -51,6 +63,7 @@ async function resolveOwnersForUnit(unit, { separateAccountPerResident, log }) {
       ...counters,
       skippedOwners,
       isGovernmentAuthority: true,
+      associationResults,
     };
   }
 
@@ -68,50 +81,75 @@ async function resolveOwnersForUnit(unit, { separateAccountPerResident, log }) {
     // resolve any Account. Clear validation error, no guessing.
     throw Object.assign(new Error('כל בעלי תת-החלקה חסרי מספר ת"ז ודאי - לא ניתן ליצור/לאתר חשבון.'), {
       skippedOwners,
+      associationResults,
     });
   }
 
   let primaryAccountId = null;
 
-  if (separateAccountPerResident) {
-    for (const owner of validOwners) {
+  async function resolveOwnerAccount(owner, { isIdentityOwner }) {
+    const label = `דייר ${owner.name} ← חשבון (Account)`;
+    try {
       log(`מאתר/יוצר חשבון עבור ${owner.name}...`);
       const account = await resolveAccountForOwner({ idNumber: owner.idNumber, ownerName: owner.name });
       if (account.created) counters.accountsCreated += 1;
       else counters.accountsReused += 1;
-
-      log(`מאתר/יוצר איש קשר עבור ${owner.name}...`);
-      const contact = await resolveContactForOwner({
-        idNumber: owner.idNumber,
-        name: owner.name,
-        accountId: account.id,
-      });
-      if (contact.created) counters.contactsCreated += 1;
-      else counters.contactsReused += 1;
-
-      if (primaryAccountId === null) primaryAccountId = account.id;
-    }
-  } else {
-    const [first, ...rest] = validOwners;
-    log(`מאתר/יוצר חשבון עבור ${first.name} (זהות תת-החלקה)...`);
-    const account = await resolveAccountForOwner({ idNumber: first.idNumber, ownerName: first.name });
-    if (account.created) counters.accountsCreated += 1;
-    else counters.accountsReused += 1;
-    primaryAccountId = account.id;
-
-    for (const owner of rest) {
-      log(`מאתר/יוצר איש קשר עבור ${owner.name} תחת אותו חשבון...`);
-      const contact = await resolveContactForOwner({
-        idNumber: owner.idNumber,
-        name: owner.name,
-        accountId: account.id,
-      });
-      if (contact.created) counters.contactsCreated += 1;
-      else counters.contactsReused += 1;
+      associationResults.push({ label, status: account.created ? 'created' : 'already_exists' });
+      return account;
+    } catch (err) {
+      associationResults.push({ label, status: 'failed' });
+      throw err;
     }
   }
 
-  return { primaryAccountId, ...counters, skippedOwners, isGovernmentAuthority: false };
+  async function resolveOwnerContact(owner, accountId) {
+    const label = `דייר ${owner.name} ← איש קשר (Contact)`;
+    try {
+      log(`מאתר/יוצר איש קשר עבור ${owner.name}...`);
+      const contact = await resolveContactForOwner({ idNumber: owner.idNumber, name: owner.name, accountId });
+      if (contact.created) counters.contactsCreated += 1;
+      else counters.contactsReused += 1;
+      associationResults.push({ label, status: contact.created ? 'created' : 'already_exists' });
+      return contact;
+    } catch (err) {
+      associationResults.push({ label, status: 'failed' });
+      throw err;
+    }
+  }
+
+  if (separateAccountPerResident) {
+    try {
+      for (const owner of validOwners) {
+        const account = await resolveOwnerAccount(owner, { isIdentityOwner: true });
+        await resolveOwnerContact(owner, account.id);
+        if (primaryAccountId === null) primaryAccountId = account.id;
+      }
+    } catch (err) {
+      // Whatever association results were already collected before the
+      // failure (including the 'failed' entry just pushed above) must
+      // still reach the caller, even though this function is about to
+      // throw and lose its local scope.
+      err.associationResults = associationResults;
+      err.skippedOwners = skippedOwners;
+      throw err;
+    }
+  } else {
+    const [first, ...rest] = validOwners;
+    try {
+      const account = await resolveOwnerAccount(first, { isIdentityOwner: true });
+      primaryAccountId = account.id;
+
+      for (const owner of rest) {
+        await resolveOwnerContact(owner, account.id);
+      }
+    } catch (err) {
+      err.associationResults = associationResults;
+      err.skippedOwners = skippedOwners;
+      throw err;
+    }
+  }
+
+  return { primaryAccountId, ...counters, skippedOwners, isGovernmentAuthority: false, associationResults };
 }
 
 /**
@@ -130,6 +168,7 @@ export async function runImport({ projectId, subParcels, separateAccountPerResid
   const referenceProductId = await getReferenceProductId();
 
   const unitResults = [];
+  const associationResults = [];
   const totals = {
     registeredProductsCreated: 0,
     registeredProductsUpdated: 0,
@@ -147,6 +186,7 @@ export async function runImport({ projectId, subParcels, separateAccountPerResid
 
     try {
       const ownerResolution = await resolveOwnersForUnit(unit, { separateAccountPerResident, log });
+      associationResults.push(...ownerResolution.associationResults);
 
       totals.accountsCreated += ownerResolution.accountsCreated;
       totals.accountsReused += ownerResolution.accountsReused;
@@ -165,14 +205,32 @@ export async function runImport({ projectId, subParcels, separateAccountPerResid
       if (rpResult.created) totals.registeredProductsCreated += 1;
       else totals.registeredProductsUpdated += 1;
 
-      // Associate this Registered Product with the selected Opportunity
-      // immediately (POST to the confirmed child-collection endpoint). If
-      // this fails, the Registered Product itself was still created/
-      // updated successfully, but this Sub-Parcel's overall result must
-      // still be reported as failed - it is not falsely reported as a
-      // success just because the RP write succeeded.
+      if (rpResult.accountAssociation) {
+        associationResults.push({
+          label: `דירה ${rpResult.serialId} ← שיוך לחשבון (Account)`,
+          status: rpResult.accountAssociation,
+        });
+      }
+
+      // Associate this Registered Product with the selected Opportunity.
+      // associateRegisteredProductWithOpportunity performs its own SAP
+      // duplicate check before ever POSTing (see opportunityService) - it
+      // never relies on whether the RP was "just created" or on this
+      // being the same import batch. If this fails, the Registered
+      // Product itself was still created/updated successfully, but this
+      // Sub-Parcel's overall result must still be reported as failed - it
+      // is not falsely reported as a success just because the RP write
+      // succeeded.
       log(`משייך מוצר רשום לפרויקט (Opportunity)...`);
-      await associateRegisteredProductWithOpportunity(projectId, rpResult.id);
+      const opportunityAssociationLabel = `דירה ${rpResult.serialId} ← שיוך לפרויקט (Opportunity)`;
+      let opportunityAssociationStatus;
+      try {
+        opportunityAssociationStatus = await associateRegisteredProductWithOpportunity(projectId, rpResult.id);
+      } catch (err) {
+        associationResults.push({ label: opportunityAssociationLabel, status: 'failed' });
+        throw err;
+      }
+      associationResults.push({ label: opportunityAssociationLabel, status: opportunityAssociationStatus });
 
       unitResults.push({
         subParcelId: unit.id,
@@ -184,6 +242,9 @@ export async function runImport({ projectId, subParcels, separateAccountPerResid
       emit({ type: 'unit_done', subParcelId: unit.id, success: true });
     } catch (err) {
       logger.error('importService', `Sub-Parcel failed: ${label}`, { message: err.message });
+      if (err.associationResults?.length) {
+        associationResults.push(...err.associationResults);
+      }
       unitResults.push({
         subParcelId: unit.id,
         label,
@@ -206,6 +267,7 @@ export async function runImport({ projectId, subParcels, separateAccountPerResid
     failedRecords,
     skippedOwnersCount,
     unitResults,
+    associationResults,
   };
 
   emit({ type: 'import_done', summary });

@@ -204,3 +204,14 @@ npm install && npm start             # listens on :8787
 cd ../frontend
 npm install && npm run dev           # Vite dev server on :5173, proxies /api -> :8787
 ```
+
+## Deploying as a single Render Web Service
+
+This repo can be deployed as ONE Render Web Service (no separate frontend/backend services). The root `package.json` builds the Vite frontend into `frontend/dist`, and the Express server (`backend/src/server.js`) serves that folder as static files, with an SPA fallback to `index.html` for any non-`/api/*` route, alongside the existing `/api/*` endpoints.
+
+Render settings:
+- **Root Directory:** repository root (the folder containing this README)
+- **Build Command:** `npm run build`
+- **Start Command:** `npm start`
+
+Environment variables (`CRM_BASE_URL`, `CRM_BASIC_USERNAME`, `CRM_BASIC_PASSWORD`, `GEMINI_API_KEY`, `GEMINI_MODEL`, etc. - see `backend/.env.example`) are set in the Render dashboard; `PORT` is provided automatically by Render and is already what `backend/src/config.js` reads.

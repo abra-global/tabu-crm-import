@@ -1,0 +1,15 @@
+{
+  "name": "tabu-crm-import",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Single-service deployment wrapper: installs and builds frontend + backend, then starts the Express server which serves both the built frontend and the /api/* backend.",
+  "scripts": {
+    "install:backend": "npm install --prefix backend",
+    "install:frontend": "npm install --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build": "npm run install:backend && npm run install:frontend && npm run build:frontend",
+    "start": "npm start --prefix backend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
+  }
+}

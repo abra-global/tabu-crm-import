@@ -1,5 +1,11 @@
 import React from 'react';
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Copy } from 'lucide-react';
+
+const ASSOCIATION_STATUS_META = {
+  created: { label: 'נוצר', badgeClass: 'badge-success', Icon: CheckCircle2 },
+  already_exists: { label: 'קיים כבר', badgeClass: 'badge-info', Icon: Copy },
+  failed: { label: 'נכשל', badgeClass: 'badge-danger', Icon: AlertTriangle },
+};
 
 export default function Results({ summary, onStartNew }) {
   const tiles = [
@@ -21,6 +27,7 @@ export default function Results({ summary, onStartNew }) {
 
   const failedUnits = summary.unitResults?.filter((u) => !u.success) ?? [];
   const unitsWithSkippedOwners = summary.unitResults?.filter((u) => u.skippedOwners?.length > 0) ?? [];
+  const associationResults = summary.associationResults ?? [];
 
   return (
     <div className="surface">
@@ -44,6 +51,31 @@ export default function Results({ summary, onStartNew }) {
           </div>
         ))}
       </div>
+
+      {associationResults.length > 0 && (
+        <>
+          <h3 className="results-section-title">שיוכים ומניעת כפילויות</h3>
+          <p className="results-section-hint">
+            לכל שיוך (מוצר רשום ← פרויקט, דייר ← חשבון, דייר ← איש קשר) נבדק מול ה-CRM אם הוא כבר קיים לפני היצירה.
+            "קיים כבר" אינו נספר כיצירה חדשה - הוא מציין ששיוך כזה כבר היה קיים ב-SAP ולא נוצר פעם נוספת.
+          </p>
+          <div className="progress-list">
+            {associationResults.map((a, i) => {
+              const meta = ASSOCIATION_STATUS_META[a.status] ?? ASSOCIATION_STATUS_META.failed;
+              const Icon = meta.Icon;
+              return (
+                <div className="progress-row" key={`${a.label}-${i}`}>
+                  <span className="status-icon">
+                    <Icon size={19} />
+                  </span>
+                  <span className="path">{a.label}</span>
+                  <span className={`badge ${meta.badgeClass}`}>{meta.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {failedUnits.length > 0 && (
         <>
