@@ -3,10 +3,11 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': 'https://tabu-crm-import.onrender.com',
-    },
+server: {
+  port: 5173,
+  allowedHosts: ['tabu-crm-import-frontend.onrender.com'],
+  proxy: {
+    '/api': 'https://tabu-crm-import.onrender.com',
   },
+},
 });
